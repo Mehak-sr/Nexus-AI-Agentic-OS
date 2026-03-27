@@ -30,12 +30,15 @@ Follow these steps to deploy the system on your local machine:
 Ensure you have **Python 3.9+** installed on your system.
 
 ### 2. Clone & Prepare
-```bash
+Open your Terminal (Command Prompt on Windows, or the terminal inside VS Code).
 # Clone the repository
+```bash
 git clone [https://github.com/](https://github.com/)[Mehak-sr]/Nexus-AI-Agentic-OS.git
 cd Nexus-AI-Agentic-OS
+```
 
 # Create the requirements file (if not already there)
+```bash
 echo "streamlit\npandas" > requirements.txt
 ```
 ## 🚀 How to Run the Project Locally
