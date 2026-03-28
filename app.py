@@ -35,57 +35,54 @@ def update_rating(name, adjustment):
 
 # --- DYNAMIC AGENTIC LOGIC ---
 def extraction_agent(text):
-    add_log("📝 Extractor", "Analyzing temporal constraints and urgency...")
+    add_log("📝 Extractor", "Analyzing linguistic patterns for dynamic task discovery...")
     new_tasks = []
-    trigger_verbs = ["needs to", "will handle", "must finish", "is assigned to", "to lead"]
+    # Added "must lead" to ensure Priya is caught
+    trigger_verbs = ["needs to", "will handle", "must finish", "is assigned to", "to lead", "must lead"]
     
-    # NEW: Keywords that imply the task must happen NOW/SOON
-    urgent_keywords = ["today", "2 hours", "3 hours", "hr", "tonight", "immediately", "now"]
-    
-    sentences = text.replace("!", ".").replace("?", ".").split(".")
+    # IMPROVED: This regex-style split handles missing periods or multiple spaces better
+    import re
+    sentences = re.split(r'[.!?\n]', text)
     
     for sentence in sentences:
+        sentence = sentence.strip()
         for verb in trigger_verbs:
             if verb in sentence.lower():
                 parts = sentence.lower().split(verb)
                 words_before = parts[0].strip().split()
                 if not words_before: continue
+                
                 name = words_before[-1].capitalize()
                 task_raw = parts[1].strip().capitalize()
                 
-                # NEW: Advanced Deadline Detection
+                # Check urgency
+                urgent_keywords = ["today", "2 hours", "3 hours", "hr", "tonight", "immediately", "now"]
                 deadline = "Pending"
                 is_urgent = False
                 for word in urgent_keywords:
                     if word in sentence.lower():
-                        # Capture the specific time mentioned (e.g., '2 hours')
-                        if "hour" in sentence.lower() or "hr" in sentence.lower():
-                            deadline = "Urgent (Sub-24h)"
-                        elif "minute" in sentence.lower() or "min" in sentence.lower():
-                            deadline = "Urgent"
-                        elif "seconds" in sentence.lower() or "sec" in sentence.lower():
-                            deadline = "Urgent"
-                        else:
-                            deadline = "Today"
+                        deadline = "Urgent (Sub-24h)" if ("hour" in word or "hr" in word) else "Today"
                         is_urgent = True
                         break
                 
                 if name not in st.session_state.ratings:
                     st.session_state.ratings[name] = 5.0
                 
+                # FORMATTING FIX: Force the rating to a clean string "5.0"
+                display_rating = f"{float(st.session_state.ratings[name]):.1f} ⭐"
+                
                 new_tasks.append({
                     "id": len(new_tasks) + 1,
                     "Task": task_raw,
                     "Owner": name,
                     "Deadline": deadline,
-                    "Is_Urgent": is_urgent, # Secret flag for the detector
-                    "Rating": f"{st.session_state.ratings[name]} ⭐",
+                    "Is_Urgent": is_urgent,
+                    "Rating": display_rating,
                     "Status": "Pending"
                 })
                 st.session_state.time_saved += 15
                 break 
     return new_tasks
-
 def self_correction_agent(problem_task):
     owner = problem_task['Owner']
     add_log("🔄 Self-Correction", f"SLA Violation by {owner}. Downgrading reliability score.")
