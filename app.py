@@ -99,7 +99,7 @@ def self_correction_agent(problem_task):
         if t["id"] == problem_task["id"]:
             t["Owner"] = "🤖 Backup-Agent"
             # Set to N/A or a system label so it doesn't show 4.5 for the bot
-            t["Rating"] = 4.5 
+            t["Rating"] = "N/A (System)"
             t["Status"] = "Fixed & Processing"
         
         # IMPORTANT: Update any other tasks this person owns so the new rating shows up everywhere
