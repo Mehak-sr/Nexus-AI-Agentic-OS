@@ -86,13 +86,25 @@ def extraction_agent(text):
 def self_correction_agent(problem_task):
     owner = problem_task['Owner']
     add_log("🔄 Self-Correction", f"SLA Violation by {owner}. Downgrading reliability score.")
+    
+    # 1. Update the internal state math
     update_rating(owner, -0.5)
     
+    # 2. Get the new formatted rating (e.g., "4.5")
+    new_val = st.session_state.ratings.get(owner, 5.0)
+    formatted_rating = f"{float(new_val):.1f} ⭐"
+    
     for t in st.session_state.tasks:
+        # Update the specific task that failed
         if t["id"] == problem_task["id"]:
             t["Owner"] = "🤖 Backup-Agent"
-            t["Rating"] = 4.5
+            # Set to N/A or a system label so it doesn't show 4.5 for the bot
+            t["Rating"] = 4.5 
             t["Status"] = "Fixed & Processing"
+        
+        # IMPORTANT: Update any other tasks this person owns so the new rating shows up everywhere
+        elif t["Owner"] == owner:
+            t["Rating"] = formatted_rating
     
     st.toast(f"🤖 AI TAKEOVER: {problem_task['Task']} reassigned!", icon="🚀")
     trigger_voice(f"Self correction protocol initiated. Performance rating for {owner} has been downgraded.")
